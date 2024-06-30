@@ -10,37 +10,45 @@ using namespace std;
 class SingleItem{
 private:
 //	string barcode;
-	string date;
+	int date;
+	int month;
 	string donor;
 	string itemName;
 	string amount;
 	string memo;
 	bool takenOut; 
+	// int
 
 public:
 	SingleItem(){
-		date = "";
+		date = 0;
+		month = 0;
 		donor = "";
 		itemName = "";
 		amount = "";
 	}
 	
-	SingleItem( string date, string donor, string itemName, string amount ){
-		this->date.assign(date);
+	SingleItem( int date, int month, string donor, string itemName, string amount ){
+		this->date = date;
+		this->month = month;
 		this->donor.assign(donor);
 		this->itemName.assign(itemName);
 		this->amount.assign(amount);
 	}
 	
-	void setDate(const std::string& date) {
+	void setDate(const int& date) {
         this->date = date;
     }
 
-    void setDonor(const std::string& donor) {
+	void setMonth( const int& month){
+		this->month = month;
+	}
+
+    void setDonor(const string& donor) {
         this->donor = donor;
     }
 
-    void setItemName(const std::string& itemName) {
+    void setItemName(const string& itemName) {
         this->itemName = itemName;
     }
 
@@ -60,8 +68,12 @@ public:
 		return donor;
 	}
 	
-	string getDate(){
+	int getDate(){
 		return date;
+	}
+
+	int getMonth(){
+		return month;
 	}
 	
 	string getItemName(){
@@ -83,7 +95,7 @@ public:
 	void displayReceipt(){
 		cout << barcode << endl;
 		for (auto& i : list) {
-            cout << "日期: " << i.getDate() << "\t捐贈者: " << i.getDonor() << "\t物品名稱: " << i.getItemName() << "\t數量: " << i.getAmount() << endl;
+            cout << "日期: " << i.getMonth() << "月" << i.getDate() << "日" << "\t捐贈者: " << i.getDonor() << "\t物品名稱: " << i.getItemName() << "\t數量: " << i.getAmount() << endl;
         }
 		cout << endl;
 	}
@@ -96,8 +108,8 @@ public:
 		return list.size();
 	}
 
-	void addItem(string date, string donor, string itemName, string amount){
-		SingleItem temp(date, donor, itemName, amount);
+	void addItem(int date, int month, string donor, string itemName, string amount){
+		SingleItem temp(date, month, donor, itemName, amount);
 		list.push_back(temp);
 	}
 	
@@ -127,12 +139,15 @@ public:
 	
 	// 物資入倉 
 	void doSingleIncome( string barcode ){ // 加入單筆收據內容 
-		string donor, date, itemName;
+		string donor, itemName;
+		int date, month;
 		string amount;
 		SingleReceipt tempIncome(barcode);
 		cout << "捐贈者: " ;
 		cin >> donor;
-		cout << "日期( 格式XX.XX ): ";
+		cout << "日期(月): ";
+		cin >> month ;
+		cout << "日期(日): ";
 		cin >> date ;
 		cout << "物品名稱: " ;
 		cin >> itemName;
@@ -141,7 +156,7 @@ public:
 			cin >> amount ;
 			cout << endl;
 			
-			tempIncome.addItem(date, donor, itemName, amount);
+			tempIncome.addItem(date, month, donor, itemName, amount);
 			
 			cout << "刪除上一筆請輸入\"D\"\n物品名稱(若此單結束請輸入\"N\"): " ;
 			cin >> itemName;
