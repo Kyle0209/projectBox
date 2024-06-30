@@ -1,11 +1,11 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
+#include <string>
 
 using namespace std;
 
-/*筆記:
-	功能一完成
-*/ 
+
 
 class SingleItem{
 private:
@@ -17,7 +17,6 @@ private:
 	string amount;
 	string memo;
 	bool takenOut; 
-	// int
 
 public:
 	SingleItem(){
@@ -84,6 +83,8 @@ public:
 class SingleReceipt{
 private:
 	string barcode;
+
+public:
 	vector<SingleItem> list;
 
 public:
@@ -103,7 +104,7 @@ public:
 	string getBarcode(){
 		return barcode;
 	}
-	
+
 	int getListSize(){
 		return list.size();
 	}
@@ -117,16 +118,19 @@ public:
 		list.pop_back();
 	}
 
-	int itemSumming(){ // 回傳本單中某項物品的數量 
+	int itemSumming(){ // 回傳本單中某項物品的數量 *********
 		return 0;
 	};
+
+	
+
 	
 	
 };
 
 class StockingSystem{
 private:
-	
+	string fileName; // 寫檔名稱
 	vector<SingleReceipt> stockList;  // 總庫存 
 	
 public:
@@ -252,19 +256,48 @@ public:
 			cin >> command;
 		}
 	}
+
+	void save2CSV( string type ) {
+		string fileName = "TotalReceiptList";
+		fileName = fileName + "." + type;
+		ofstream outfile(fileName);
+		
+		if(!outfile.is_open()){
+			cerr << "錯誤開啟檔案:" << fileName << endl;
+			return;
+		}
+
+		outfile << "barcode, month, date, donor, itemname, amount\n";
+
+		for ( auto receipt : stockList ){
+			receipt.displayReceipt();
+			for( auto item : receipt.list ){
+				outfile << receipt.getBarcode() << ", " << item.getMonth() << "," << item.getDate() << "," << item.getDonor() << "," << item.getItemName() << "," << item.getAmount() << endl;
+			}
+		}
+
+		outfile.close();
+		cout << "已儲存，檔名: " << fileName;
+		
+	}
 	
 	void go(){
 		cout << "*****庫存管理系統V1.0*****" << endl; 
-		
-		int command;
-		cout << "0.退出程序\n1.收據輸入\n2.庫存領取\n3.盤點所有庫存\n4.搜索\n\n--請輸入選項: ";
-		
-		cin >> command;
+		string type = "";
+		int command = -1;
 		while(command != 0){
+			cout << "0.退出程序\n1.收據輸入\n2.庫存領取\n3.盤點所有庫存\n4.搜索\n\n--請輸入選項: ";
+			cin >> command;
 	
 			switch(command){
 				case 1 :
 					doIncome();
+					cout << "輸入結束，開始寫檔..."<< endl;
+					cout << "請輸入想要存檔的類型" << endl;
+					cout << "--Excel格式:csv\n--記事本格式:txt\n: ";
+					cin >> type;
+					save2CSV(type);
+					cout << "寫檔完成"<< endl << endl;
 					break;
 					
 				case 2 :
@@ -282,8 +315,6 @@ public:
 				default:
 					break;
 			}
-			cout << "0.退出程序\n1.收據輸入\n2.庫存領取\n3.盤點所有庫存\n\n--請輸入選項: ";
-			cin >> command;
 		}
 	}
 };
