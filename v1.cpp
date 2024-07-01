@@ -8,32 +8,44 @@ using namespace std;
 
 
 class SingleItem{
-private:
-//	string barcode;
+public:
+//	進貨區;
 	int date;
 	int month;
-	string donor;
+	string donor; // 捐贈者
 	string itemName;
 	string amount;
 	string memo;
-	bool takenOut; 
+
+// 領取區	 
+   int outMonth;
+   int outDate;
+   string recipient; // 領取人
+
 
 public:
+
+	bool takenOut;
+	
 	SingleItem(){
 		date = 0;
 		month = 0;
 		donor = "";
 		itemName = "";
 		amount = "";
+		takenOut = false;
 	}
 	
 	SingleItem( int date, int month, string donor, string itemName, string amount ){
 		this->date = date;
 		this->month = month;
-		this->donor.assign(donor);
+		if( donor == "00" ) this->donor.assign("未紀錄");
+		else this->donor.assign(donor);
 		this->itemName.assign(itemName);
 		this->amount.assign(amount);
 	}
+
+	
 	
 	void setDate(const int& date) {
         this->date = date;
@@ -96,9 +108,33 @@ public:
 	void displayReceipt(){
 		cout << barcode << endl;
 		for (auto& i : list) {
-            cout << "日期: " << i.getMonth() << "月" << i.getDate() << "日" << "\t捐贈者: " << i.getDonor() << "\t物品名稱: " << i.getItemName() << "\t數量: " << i.getAmount() << endl;
+            cout << "日期: " << i.getMonth() << "月" << i.getDate() << "日" << "\t捐贈者: " << i.getDonor() << "\t物品名稱: " << i.getItemName() << "\t數量: " << i.getAmount() ;
+			if(i.takenOut)
+				cout << "\t領取人:" << i.recipient << "\t日期:" << i.outMonth << "\t月" << i.outDate << "日";
+			cout << endl;
         }
 		cout << endl;
+	}
+
+	void displayUntakenItem(){
+		cout << barcode << endl;
+		for (auto& i : list) {
+			if( !i.takenOut ){
+				cout << "日期: " << i.getMonth() << "月" << i.getDate() << "日" << "\t捐贈者: " << i.getDonor() << "\t物品名稱: " << i.getItemName() << "\t數量: " << i.getAmount() << endl;
+			}
+		}
+		cout << endl;
+	}
+
+	void takingOut(int month, int date, string itemName, string name){
+		for (auto& i : list) {
+			if(i.recipient == name){
+				i.takenOut = 1;
+				i.month = month;
+				i.date = date;
+				break;
+			}
+		}
 	}
 	
 	string getBarcode(){
@@ -140,6 +176,12 @@ public:
 			i.displayReceipt();
 		}
 	}
+
+	void displayUntakenList(){
+		for( auto i : stockList){
+			i.displayUntakenItem();
+		}
+	}
 	
 	// 物資入倉 
 	void doSingleIncome( string barcode ){ // 加入單筆收據內容 
@@ -147,7 +189,7 @@ public:
 		int date, month;
 		string amount;
 		SingleReceipt tempIncome(barcode);
-		cout << "捐贈者: " ;
+		cout << "捐贈者(若無輸入\"00\"): " ;
 		cin >> donor;
 		cout << "日期(月): ";
 		cin >> month ;
@@ -197,9 +239,41 @@ public:
 	}
 	
 	// 貨物領取 
-	void doTakeOut(){ // 出貨邏輯? 
+	void doTakeOut(){ // 出貨邏輯?
+		string barcode, itemName, name, amount;
+		int month, date;
+
 		cout << "unwritten function." ; 
-		
+		displayUntakenList();
+		cout << "輸入訂單編號:" ;
+		cin >> barcode;
+		while(barcode != "N"){
+			cout << "領取月份:" ;
+			cin >> month;
+			cout << "領取日期:" ;
+			cin >> date;
+			cout << "領取物品(退出輸入\"N\"):";
+			cin >> itemName;
+			while( itemName != "N" && itemName != "n" ){
+				cout << "領取人";
+				cin >> name;
+
+				for( auto i : stockList ){
+					if(i.getBarcode() == barcode){
+						i.takingOut(month, date, itemName, name);
+						break;
+					}
+				}
+				cout << "領取物品(退出輸入\"N\"):";
+				cin >> itemName;
+			}
+
+
+			cout << "輸入訂單編號(退出輸入\"N\"):" ;
+			cin >> barcode;
+		}
+
+		cout << "領取結束" << endl << endl;
 	}
 	
 	
@@ -272,7 +346,7 @@ public:
 		for ( auto receipt : stockList ){
 			receipt.displayReceipt();
 			for( auto item : receipt.list ){
-				outfile << receipt.getBarcode() << ", " << item.getMonth() << "," << item.getDate() << "," << item.getDonor() << "," << item.getItemName() << "," << item.getAmount() << endl;
+				outfile << receipt.getBarcode() << ", " << item.getMonth() << "月" << item.getDate() << "日," << item.getDonor() << "," << item.getItemName() << "," << item.getAmount() << item.recipient << "," << item.outMonth << "月" << item.outDate << "日" << endl;
 			}
 		}
 
@@ -290,7 +364,7 @@ public:
 			cin >> command;
 	
 			switch(command){
-				case 1 :
+				case 1 :{
 					doIncome();
 					cout << "輸入結束，開始寫檔..."<< endl;
 					cout << "請輸入想要存檔的類型" << endl;
@@ -299,9 +373,16 @@ public:
 					save2CSV(type);
 					cout << "寫檔完成"<< endl << endl;
 					break;
+				}
 					
 				case 2 :
 					doTakeOut();
+					cout << "領取結束，開始寫黨..." << endl;
+					cout << "請輸入想要存檔的類型" << endl;
+					cout << "--Excel格式:csv\n--記事本格式:txt\n: ";
+					cin >> type;
+					save2CSV(type);
+					cout << "寫檔完成"<< endl << endl;
 					break;
 					
 				case 3 :
@@ -311,11 +392,21 @@ public:
 				case 4 :
 					doSearching();
 					break;
-					
+
+				case 5 :{
+				 	string i = "";
+					cout << "please輸入: " ;
+					cin >> i ;
+					cout << "輸出: " << i << endl ;
+					break; 
+				}
+
 				default:
 					break;
 			}
 		}
+
+		stockList.clear();
 	}
 };
 
