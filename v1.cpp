@@ -2,6 +2,8 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -9,18 +11,18 @@ using namespace std;
 
 class SingleItem{
 public:
-//	é€²è²¨å€;
+//	¶i³f°Ï;
 	int date;
 	int month;
-	string donor; // æè´ˆè€…
+	string donor; // ®½ÃØªÌ
 	string itemName;
 	string amount;
 	string memo;
 
-// é ˜å–å€	 
-   int outMonth;
-   int outDate;
-   string recipient; // é ˜å–äºº
+// »â¨ú°Ï	 
+   string outMonth;
+   string outDate;
+   string recipient; // »â¨ú¤H
 
 
 public:
@@ -34,38 +36,63 @@ public:
 		itemName = "";
 		amount = "";
 		takenOut = false;
+
+		outDate = "";
+		outMonth = "";
+		recipient = "";
 	}
 	
 	SingleItem( int date, int month, string donor, string itemName, string amount ){
 		this->date = date;
 		this->month = month;
-		if( donor == "00" ) this->donor.assign("æœªç´€éŒ„");
+		if( donor == "00" ) this->donor.assign("¥¼¬ö¿ý");
 		else this->donor.assign(donor);
 		this->itemName.assign(itemName);
 		this->amount.assign(amount);
+		this->takenOut = false;
+		
+		this->outDate = "";
+		this->outMonth = "";
+		this->recipient = "";
 	}
 
 	
 	
-	void setDate(const int& date) {
+	void setDate( int date) {
         this->date = date;
     }
 
-	void setMonth( const int& month){
+	void setMonth(  int month){
 		this->month = month;
 	}
 
-    void setDonor(const string& donor) {
+    void setDonor( string donor) {
         this->donor = donor;
     }
 
-    void setItemName(const string& itemName) {
+    void setItemName( string itemName) {
         this->itemName = itemName;
     }
 
     void setAmount(string amount) {
         this->amount.assign(amount);
     }
+    
+    void setOutDate( string outDate ){
+    	this->outDate.assign(outDate);
+	}
+	
+    void setOutMonth( string outMonth ){
+    	this->outMonth.assign(outMonth);
+	}
+	
+    void setRecipient( string recipient ){
+    	this->recipient.assign(recipient);
+	}
+	
+	void setTakenOut( bool takenOut ){
+		this->takenOut = takenOut;
+	}
 	
 	int getAmount_Int(){
 		return stoi(amount);
@@ -106,33 +133,36 @@ public:
 	}
 	
 	void displayReceipt(){
-		cout << barcode << endl;
+		cout << "--" << barcode << endl;
 		for (auto& i : list) {
-            cout << "æ—¥æœŸ: " << i.getMonth() << "æœˆ" << i.getDate() << "æ—¥" << "\tæè´ˆè€…: " << i.getDonor() << "\tç‰©å“åç¨±: " << i.getItemName() << "\tæ•¸é‡: " << i.getAmount() ;
+            cout << "----¤é´Á: " << i.getMonth() << "¤ë" << i.getDate() << "¤é" << "\t®½ÃØªÌ: " << i.getDonor() << "\tª««~¦WºÙ: " << i.getItemName() << "\t¼Æ¶q: " << i.getAmount() ;
 			if(i.takenOut)
-				cout << "\té ˜å–äºº:" << i.recipient << "\tæ—¥æœŸ:" << i.outMonth << "\tæœˆ" << i.outDate << "æ—¥";
+				cout << "\t»â¨ú¤H:" << i.recipient << "\t¤é´Á:" << i.outMonth << "\t¤ë" << i.outDate << "¤é";
 			cout << endl;
         }
 		cout << endl;
 	}
-
 	void displayUntakenItem(){
 		cout << barcode << endl;
 		for (auto& i : list) {
 			if( !i.takenOut ){
-				cout << "æ—¥æœŸ: " << i.getMonth() << "æœˆ" << i.getDate() << "æ—¥" << "\tæè´ˆè€…: " << i.getDonor() << "\tç‰©å“åç¨±: " << i.getItemName() << "\tæ•¸é‡: " << i.getAmount() << endl;
+				cout << "¤é´Á: " << i.getMonth() << "¤ë" << i.getDate() << "¤é" << "\t®½ÃØªÌ: " << i.getDonor() << "\tª««~¦WºÙ: " << i.getItemName() << "\t¼Æ¶q: " << i.getAmount() << endl;
 			}
 		}
 		cout << endl;
 	}
 
-	void takingOut(int month, int date, string itemName, string name){
+	void takingOut(string outMonth, string outDate, string itemName, string recipient){
 		for (auto& i : list) {
-			if(i.recipient == name){
-				i.takenOut = 1;
-				i.month = month;
-				i.date = date;
+			if(i.itemName.compare(itemName) == 0){
+				cout << i.itemName << endl;
+				i.setTakenOut(true);
+				i.setOutDate(outDate);
+				i.setOutMonth(outMonth);
+				i.setRecipient(recipient);
 				break;
+				
+				cout << endl << i.itemName << " " << recipient << endl << endl;
 			}
 		}
 	}
@@ -154,7 +184,7 @@ public:
 		list.pop_back();
 	}
 
-	int itemSumming(){ // å›žå‚³æœ¬å–®ä¸­æŸé …ç‰©å“çš„æ•¸é‡ *********
+	int itemSumming(){ // ¦^¶Ç¥»³æ¤¤¬Y¶µª««~ªº¼Æ¶q *********
 		return 0;
 	};
 
@@ -166,8 +196,8 @@ public:
 
 class StockingSystem{
 private:
-	string fileName; // å¯«æª”åç¨±
-	vector<SingleReceipt> stockList;  // ç¸½åº«å­˜ 
+	string fileName; // ¼gÀÉ¦WºÙ
+	vector<SingleReceipt> stockList;  // Á`®w¦s 
 	
 public:
 	
@@ -183,39 +213,39 @@ public:
 		}
 	}
 	
-	// ç‰©è³‡å…¥å€‰ 
-	void doSingleIncome( string barcode ){ // åŠ å…¥å–®ç­†æ”¶æ“šå…§å®¹ 
+	// ª«¸ê¤J­Ü 
+	void doSingleIncome( string barcode ){ // ¥[¤J³æµ§¦¬¾Ú¤º®e 
 		string donor, itemName;
 		int date, month;
 		string amount;
 		SingleReceipt tempIncome(barcode);
-		cout << "æè´ˆè€…(è‹¥ç„¡è¼¸å…¥\"00\"): " ;
+		cout << "----®½ÃØªÌ(­YµL¿é¤J\"00\"): " ;
 		cin >> donor;
-		cout << "æ—¥æœŸ(æœˆ): ";
+		cout << "----¤é´Á(¤ë): ";
 		cin >> month ;
-		cout << "æ—¥æœŸ(æ—¥): ";
+		cout << "----¤é´Á(¤é): ";
 		cin >> date ;
-		cout << "ç‰©å“åç¨±: " ;
+		cout << "----ª««~¦WºÙ: " ;
 		cin >> itemName;
 		while( itemName != "N" ){
-			cout << "æ•¸é‡: ";
+			cout << "----¼Æ¶q: ";
 			cin >> amount ;
 			cout << endl;
 			
 			tempIncome.addItem(date, month, donor, itemName, amount);
 			
-			cout << "åˆªé™¤ä¸Šä¸€ç­†è«‹è¼¸å…¥\"D\"\nç‰©å“åç¨±(è‹¥æ­¤å–®çµæŸè«‹è¼¸å…¥\"N\"): " ;
+			cout << "--§R°£¤W¤@µ§½Ð¿é¤J\"D\"\n----ª««~¦WºÙ(­Y¦¹³æµ²§ô½Ð¿é¤J\"N\"): " ;
 			cin >> itemName;
-			while( itemName == "D" ){
+			while( itemName == "D" || itemName == "d" ){
 				if( tempIncome.getListSize() == 0 ){
-					cout << "\næœ¬ç­†æ”¶æ“šç‚ºç©º\n" << endl;
-					cout << "è¼¸å…¥ç‰©å“åç¨±(è‹¥æ­¤å–®çµæŸè«‹è¼¸å…¥\"N\"): " ;
+					cout << "\n--¥»µ§¦¬¾Ú¬°ªÅ\n" << endl;
+					cout << "----¿é¤Jª««~¦WºÙ(­Y¦¹³æµ²§ô½Ð¿é¤J\"N\"): " ;
 				}
 				
 				else{
 					tempIncome.popLast();
-					cout << endl << "***å·²åˆªé™¤å‰ä¸€ç­†ï¼Œè«‹é‡æ–°è¼¸å…¥***"<< endl << endl; 
-					cout << "åˆªé™¤ä¸Šä¸€ç­†è«‹è¼¸å…¥\"D\"\nç‰©å“åç¨±(è‹¥æ­¤å–®çµæŸè«‹è¼¸å…¥\"N\"): " ;
+					cout << endl << "***¤w§R°£«e¤@µ§¡A½Ð­«·s¿é¤J***"<< endl << endl; 
+					cout << "--§R°£¤W¤@µ§½Ð¿é¤J\"D\"\n----ª««~¦WºÙ(­Y¦¹³æµ²§ô½Ð¿é¤J\"N\"): " ;
 					
 				}
 				cin >> itemName;
@@ -225,65 +255,69 @@ public:
 		stockList.push_back(tempIncome);
 	}
 
-	void doIncome(){ // ä¸€ç­†ä¸€ç­†è¼¸å…¥æ”¶æ“š 
+	void doIncome(){ // ¤@µ§¤@µ§¿é¤J¦¬¾Ú 
 		string barcode;
-		cout << endl << "è«‹è¼¸å…¥æ”¶æ“šç·¨è™Ÿ(è‹¥é€€å‡ºè¼¸å…¥è«‹è¼¸å…¥\"N\"): "" ";
+		cout << endl << "--½Ð¿é¤J¦¬¾Ú½s¸¹(­Y°h¥X¿é¤J½Ð¿é¤J\"N\"): ";
 		cin >> barcode;
 		while( barcode != "N" ){
 			doSingleIncome(barcode);
 			
-			cout << endl << "è«‹è¼¸å…¥æ”¶æ“šç·¨è™Ÿ(è‹¥é€€å‡ºè¼¸å…¥è«‹è¼¸å…¥\"N\"): ";
+			cout << endl << "--½Ð¿é¤J¦¬¾Ú½s¸¹(­Y°h¥X¿é¤J½Ð¿é¤J\"N\"): ";
 			cin >> barcode;
 		}
 		cout << endl;
 	}
 	
-	// è²¨ç‰©é ˜å– 
-	void doTakeOut(){ // å‡ºè²¨é‚è¼¯?
-		string barcode, itemName, name, amount;
-		int month, date;
+	// ³fª«»â¨ú 
+	void doTakeOut(){ // ¥X³fÅÞ¿è?
+		string barcode, itemName;
+		string recipient, amount;
+		string month, date;
 
-		cout << "unwritten function." ; 
+		cout << "--unwritten function.\n" ; 
 		displayUntakenList();
-		cout << "è¼¸å…¥è¨‚å–®ç·¨è™Ÿ:" ;
+		cout << "--½Ð¿é¤J¦¬¾Ú½s¸¹(­Y°h¥X¿é¤J½Ð¿é¤J\"N\"): " ;
 		cin >> barcode;
 		while(barcode != "N"){
-			cout << "é ˜å–æœˆä»½:" ;
+			cout << "----»â¨ú¤ë¥÷:" ;
 			cin >> month;
-			cout << "é ˜å–æ—¥æœŸ:" ;
+			cout << "----»â¨ú¤é´Á:" ;
 			cin >> date;
-			cout << "é ˜å–ç‰©å“(é€€å‡ºè¼¸å…¥\"N\"):";
+			cout << "----»â¨úª««~(°h¥X¿é¤J\"N\"):";
 			cin >> itemName;
 			while( itemName != "N" && itemName != "n" ){
-				cout << "é ˜å–äºº";
-				cin >> name;
+				cout << "----»â¨ú¤H:";
+				cin >> recipient;
+				cin.ignore(); // ²M°£´«¦æ²Å¸¹
+				cout << endl;
 
 				for( auto i : stockList ){
 					if(i.getBarcode() == barcode){
-						i.takingOut(month, date, itemName, name);
+						i.takingOut(month, date, itemName, recipient);
 						break;
 					}
 				}
-				cout << "é ˜å–ç‰©å“(é€€å‡ºè¼¸å…¥\"N\"):";
+				cout << endl;
+				cout << "----»â¨úª««~(°h¥X¿é¤J\"N\"):";
 				cin >> itemName;
 			}
 
 
-			cout << "è¼¸å…¥è¨‚å–®ç·¨è™Ÿ(é€€å‡ºè¼¸å…¥\"N\"):" ;
+			cout << "--½Ð¿é¤J¦¬¾Ú½s¸¹(­Y°h¥X¿é¤J½Ð¿é¤J\"N\"): " ;
 			cin >> barcode;
 		}
 
-		cout << "é ˜å–çµæŸ" << endl << endl;
+		cout << "--»â¨úµ²§ô" << endl << endl;
 	}
 	
 	
-	//æœç´¢ 
-	void searchByBarcode(){ // è¼¸å…¥æ”¶æ“šç·¨è™Ÿï¼Œåˆ—å‡ºæ‰€æœ‰è³‡è¨Š 
+	//·j¯Á 
+	void searchByBarcode(){ // ¿é¤J¦¬¾Ú½s¸¹¡A¦C¥X©Ò¦³¸ê°T 
 		string barcode;
 		int index = 0;
-		cout << "è¼¸å…¥æ”¶æ“šç·¨è™Ÿ:";
+		cout << "--½Ð¿é¤J¦¬¾Ú½s¸¹(­Y°h¥X¿é¤J½Ð¿é¤J\"N\"): ";
 		cin >> barcode;
-		for( ; index < stockList.size() ; index++ ){
+		for(const auto &receipt : stockList){
 			if( stockList[index].getBarcode() == barcode ){
 				stockList[index].displayReceipt();
 				break;
@@ -293,14 +327,40 @@ public:
 		
 	} 
 	
-	void searchByItem(){ // è¼¸å…¥ç‰©å“åç¨±ï¼Œåˆ—å‡ºæ‰€æœ‰ç¬¦åˆçš„æ•¸æ“š 
-		
+	void searchByItem( string targetItem ){ // ¿é¤Jª««~¦WºÙ¡A¦C¥X©Ò¦³²Å¦Xªº¼Æ¾Ú 
+		int total = 0;
+		for(auto &searchReceipt : stockList){
+			for(auto &searchItem : searchReceipt.list){
+				if( searchItem.itemName == targetItem ){
+					cout << endl; 
+					cout << "--" << searchReceipt.getBarcode() << endl;
+					cout << "----¤é´Á: " << searchItem.getMonth() << "¤ë" << searchItem.getDate() << "¤é" << "\t®½ÃØªÌ: " << searchItem.getDonor() << "\tª««~¦WºÙ: " << searchItem.getItemName() << "\t¼Æ¶q: " << searchItem.getAmount() ;
+					if(searchItem.takenOut)
+						cout << "\t»â¨ú¤H:" << searchItem.recipient << "\t¤é´Á:" << searchItem.outMonth << "\t¤ë" << searchItem.outDate << "¤é";
+					cout << endl;
+				}
+			}
+		}
+	}
+	
+	void searchByMonth( int month ){
+		for(auto &searchReceipt : stockList){
+			if(searchReceipt.list[0].month == month)
+				searchReceipt.displayReceipt();
+		}
+	}
+	
+	void searchByDonor( string donorName ){
+		for(auto &searchReceipt : stockList){
+			if(searchReceipt.list[0].donor == donorName)
+				searchReceipt.displayReceipt();
+		}
 	}
 	
 	void doSearching(){
 		int command = -1;
-		cout << endl << "***è¼¸å…¥æŸ¥è©¢æ–¹å¼***" << endl;
-		cout << "0.é€€å‡º\n1.æŸ¥è©¢å–®ç­†æ”¶æ“š\n2.æŸ¥è©¢ç‰©å“åº«å­˜\n\nè¼¸å…¥é¸é …:";
+		cout << endl << "***¿é¤J¬d¸ß¤è¦¡***" << endl;
+		cout << "0.°h¥X\n1.¬d¸ß³æµ§¦¬¾Ú\n2.¬d¸ßª««~®w¦s\n3.¥H¤ë¥÷¬d¸ß\n4.¥H®½ÃØªÌ¬d¸ß\n\n¿é¤J¿ï¶µ:";
 		cin >> command;
 		while(command != 0){
 			switch(command){
@@ -311,24 +371,76 @@ public:
 					searchByBarcode();
 					break;
 					
-				case 2:
-					searchByItem();
+				case 2:{
+					string targetItem;
+					cout << "--¿é¤J¬d¸ßª««~:";
+					cin >> targetItem;
+					searchByItem(targetItem);
 					break;
+				}
 					
-				case 3:
-					//searchByDate();
-					
-				case 4:
-					//searchByDonor();
+				case 3:{
+					int searchMonth = 0;
+					cin >> searchMonth;
+					searchByMonth( searchMonth );
+					break;
+				}
+				case 4:{
+					string searchDonor;
+					cin >> searchDonor;
+					searchByDonor( searchDonor );
+					break;
+				}
 					
 				default:
 					break;	
 				
 			}
-			cout << endl << "***è¼¸å…¥æŸ¥è©¢æ–¹å¼***" << endl;
-			cout << "0.é€€å‡º\n1.æŸ¥è©¢å–®ç­†æ”¶æ“š\n2.æŸ¥è©¢ç‰©å“åº«å­˜\n\nè¼¸å…¥é¸é …:";
+			cout << endl << "***¿é¤J¬d¸ß¤è¦¡***" << endl;
+			cout << "0.°h¥X\n1.¬d¸ß³æµ§¦¬¾Ú\n2.¬d¸ßª««~®w¦s\n3.¥H¤ë¥÷¬d¸ß\n4.¥H®½ÃØªÌ¬d¸ß\n\n¿é¤J¿ï¶µ:";
 			cin >> command;
 		}
+	}
+
+	void readFile(){
+		string filename = "TotalReceiptList.csv";
+		ifstream infile(filename);
+		string line;
+		std::getline(infile, line); // Åª±¼¼ÐÃD 
+		while( getline(infile, line)){
+			stringstream ss(line);
+			std::string barcode, month, date, donor, itemName, amount;
+
+	        // ³vÄæÅª¨ú 
+	        std::getline(ss, barcode, ',');
+	        std::getline(ss, month, ',');
+	        std::getline(ss, date, ',');
+	        std::getline(ss, donor, ',');
+	        std::getline(ss, itemName, ',');
+	        std::getline(ss, amount, ',');
+	        
+			// ¬d¸ß©Î³Ð«Ø¬ÛÀ³ªºSingleReceipt 
+			SingleReceipt* receipt = nullptr;
+	        for (auto& r : stockList) {
+	            if (r.getBarcode() == barcode) {
+	                receipt = &r;
+	                break;
+	            }
+	        }
+	        if (!receipt) {
+	            stockList.emplace_back(barcode);
+	            receipt = &stockList.back();
+	        }
+	
+	        // «Ø¥ßSingleItem¹ï¶H¨Ã²K¥[¶i¸ê®Æ
+	        int intDate = std::stoi(date);
+	        int intMonth = std::stoi(month);
+	        receipt->addItem(intDate, intMonth, donor, itemName, amount);
+	    }
+	
+	    infile.close();
+	    cout << "Åª¨ú§¹²¦: " << fileName << endl;
+		
 	}
 
 	void save2CSV( string type ) {
@@ -337,55 +449,67 @@ public:
 		ofstream outfile(fileName);
 		
 		if(!outfile.is_open()){
-			cerr << "éŒ¯èª¤é–‹å•Ÿæª”æ¡ˆ:" << fileName << endl;
+			cerr << "--¿ù»~¶}±ÒÀÉ®×:" << fileName << endl;
 			return;
 		}
 
-		outfile << "barcode, month, date, donor, itemname, amount\n";
+		outfile << "¦¬¾Ú½s¸¹,¤ë¥÷,¤é´Á,®½ÃØªÌ,ª««~¦WºÙ,¼Æ¶q,»â¨úªÌ,»â¨ú¤ë¥÷,»â¨ú¤é´Á\n";
 
-		for ( auto receipt : stockList ){
-			receipt.displayReceipt();
-			for( auto item : receipt.list ){
-				outfile << receipt.getBarcode() << ", " << item.getMonth() << "æœˆ" << item.getDate() << "æ—¥," << item.getDonor() << "," << item.getItemName() << "," << item.getAmount() << item.recipient << "," << item.outMonth << "æœˆ" << item.outDate << "æ—¥" << endl;
+		for ( auto & receipt : stockList ){
+			//receipt.displayReceipt();
+			for( auto & item : receipt.list ){
+				outfile << receipt.getBarcode() << ", " << item.getMonth() << "," << item.getDate() << "," << item.getDonor() << "," << item.getItemName() << "," << item.getAmount() << "," << item.recipient << "," << item.outMonth << "," << item.outDate << "," << endl;
 			}
 		}
 
 		outfile.close();
-		cout << "å·²å„²å­˜ï¼Œæª”å: " << fileName;
+		cout << "--¤wÀx¦s¡AÀÉ¦W: " << fileName;
 		
 	}
 	
+	void sortList(){
+		sort(stockList.begin(), stockList.end(), [](SingleReceipt &a, SingleReceipt &b) {
+			return (a.getBarcode())< b.getBarcode();
+		});
+	}
+	
 	void go(){
-		cout << "*****åº«å­˜ç®¡ç†ç³»çµ±V1.0*****" << endl; 
+		readFile();
+		sortList();
+		cout << "*****®w¦sºÞ²z¨t²ÎV1.0*****" << endl; 
 		string type = "";
 		int command = -1;
 		while(command != 0){
-			cout << "0.é€€å‡ºç¨‹åº\n1.æ”¶æ“šè¼¸å…¥\n2.åº«å­˜é ˜å–\n3.ç›¤é»žæ‰€æœ‰åº«å­˜\n4.æœç´¢\n\n--è«‹è¼¸å…¥é¸é …: ";
+			cout << "0.°h¥Xµ{§Ç\n1.¦¬¾Ú¿é¤J\n2.®w¦s»â¨ú\n3.½LÂI©Ò¦³®w¦s\n4.·j¯Á\n5.¿é¥XÀÉ®×\n\n--½Ð¿é¤J¿ï¶µ: ";
+			Start:
 			cin >> command;
 	
 			switch(command){
 				case 1 :{
 					doIncome();
-					cout << "è¼¸å…¥çµæŸï¼Œé–‹å§‹å¯«æª”..."<< endl;
-					cout << "è«‹è¼¸å…¥æƒ³è¦å­˜æª”çš„é¡žåž‹" << endl;
-					cout << "--Excelæ ¼å¼:csv\n--è¨˜äº‹æœ¬æ ¼å¼:txt\n: ";
-					cin >> type;
+					sortList();
+					cout << "--¿é¤Jµ²§ô¡A¶}©l¼gÀÉ..."<< endl;
+					type = "csv";
 					save2CSV(type);
-					cout << "å¯«æª”å®Œæˆ"<< endl << endl;
+					type = "txt";
+					save2CSV(type);
+					cout << "--¼gÀÉ§¹¦¨"<< endl << endl;
 					break;
 				}
 					
 				case 2 :
 					doTakeOut();
-					cout << "é ˜å–çµæŸï¼Œé–‹å§‹å¯«é»¨..." << endl;
-					cout << "è«‹è¼¸å…¥æƒ³è¦å­˜æª”çš„é¡žåž‹" << endl;
-					cout << "--Excelæ ¼å¼:csv\n--è¨˜äº‹æœ¬æ ¼å¼:txt\n: ";
-					cin >> type;
+					sortList();
+					cout << "--»â¨úµ²§ô¡A¶}©l¼gÀÉ..." << endl;
+					type = "csv";
 					save2CSV(type);
-					cout << "å¯«æª”å®Œæˆ"<< endl << endl;
+					type = "txt";
+					save2CSV(type);
+					cout << "--¼gÀÉ§¹¦¨"<< endl << endl;
 					break;
 					
 				case 3 :
+					cout << endl;
 					displayStockList();
 					break;
 					
@@ -393,16 +517,23 @@ public:
 					doSearching();
 					break;
 
-				case 5 :{
-				 	string i = "";
-					cout << "pleaseè¼¸å…¥: " ;
-					cin >> i ;
-					cout << "è¼¸å‡º: " << i << endl ;
-					break; 
+				case 5:{
+				
+					type = "csv";
+					save2CSV(type);
+					type = "txt";
+					save2CSV(type);
+					cout << "--¼gÀÉ§¹¦¨"<< endl << endl;
+					break;
 				}
 
-				default:
+
+				default:{ 
+					cout << endl;
+					cout << "¿ï¶µ¿ù»~¡A½Ð¦A¦¸¿é¤J[0~5]:";
+					goto Start;	
 					break;
+				} 
 			}
 		}
 
